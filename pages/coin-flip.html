@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coin Flip</title>
+<style>
+body{font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#1a1b26;color:#c0caf5;margin:0}
+#coin{font-size:6rem;margin:1rem;transition:transform .3s}
+button{font-size:1.2rem;padding:.6rem 1.8rem;border:none;border-radius:8px;background:#e0af68;color:#1a1b26;cursor:pointer}
+#stats{margin-top:1rem;color:#9aa5ce}
+</style>
+</head>
+<body>
+<h1>Coin Flip</h1>
+<div id="coin">&#129689;</div>
+<button onclick="flip()">Flip</button>
+<div id="stats">Heads: 0 | Tails: 0</div>
+<script>
+let h=0,t=0;
+function flip(){
+  const heads=Math.random()<0.5;
+  heads?h++:t++;
+  const coin=document.getElementById('coin');
+  coin.textContent=heads?'\uD83D\uDE00':'\uD83D\uDE08';
+  coin.title=heads?'Heads':'Tails';
+  coin.style.transform='rotateY(360deg)';
+  setTimeout(()=>coin.style.transform='',350);
+  document.getElementById('stats').textContent=`Heads: ${h} | Tails: ${t}`;
+}
+</script>
+</body>
+</html>
