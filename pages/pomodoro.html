@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pomodoro Timer</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #1e1e2e; color: #cdd6f4; margin-top: 10vh; }
+  #clock { font-size: 4rem; margin: 1rem; font-variant-numeric: tabular-nums; }
+  button { font-size: 1.1rem; margin: 0.3rem; padding: 0.5rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; background: #89b4fa; color: #11111b; }
+  button:hover { background: #b4befe; }
+  #mode { font-size: 1.3rem; color: #a6e3a1; }
+</style>
+</head>
+<body>
+<h1>🍅 Pomodoro Timer</h1>
+<div id="mode">Focus</div>
+<div id="clock">25:00</div>
+<div>
+  <button id="startBtn">Start</button>
+  <button id="resetBtn">Reset</button>
+</div>
+<script>
+// Simple Pomodoro: 25 min focus, 5 min break, alternating.
+const FOCUS = 25 * 60, BREAK = 5 * 60;
+let remaining = FOCUS, focusing = true, timer = null;
+
+const clock = document.getElementById('clock');
+const mode = document.getElementById('mode');
+const startBtn = document.getElementById('startBtn');
+
+function fmt(s) {
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+}
+function tick() {
+  remaining--;
+  if (remaining < 0) {
+    focusing = !focusing;
+    remaining = focusing ? FOCUS : BREAK;
+    mode.textContent = focusing ? 'Focus' : 'Break ☕';
+    alert(focusing ? 'Break over — back to work!' : 'Focus session done — take a break!');
+  }
+  clock.textContent = fmt(remaining);
+}
+startBtn.onclick = () => {
+  if (timer) { clearInterval(timer); timer = null; startBtn.textContent = 'Start'; }
+  else { timer = setInterval(tick, 1000); startBtn.textContent = 'Pause'; }
+};
+document.getElementById('resetBtn').onclick = () => {
+  clearInterval(timer); timer = null;
+  focusing = true; remaining = FOCUS;
+  clock.textContent = fmt(remaining); mode.textContent = 'Focus';
+  startBtn.textContent = 'Start';
+};
+</script>
+</body>
+</html>
