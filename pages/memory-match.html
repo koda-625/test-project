@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!-- Memory Match: flip cards to find pairs. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory Match</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #f0f4ff; }
+  #stats { margin: 10px; font-size: 1.1em; }
+  #board { display: grid; grid-template-columns: repeat(4, 70px); gap: 8px;
+           justify-content: center; margin: 0 auto; }
+  .card { width: 70px; height: 70px; font-size: 2em; cursor: pointer;
+          background: #4a6fa5; color: transparent; border: none;
+          border-radius: 8px; }
+  .card.up, .card.done { background: #fff; color: #222; cursor: default; }
+  .card.done { background: #d4edda; }
+</style>
+</head>
+<body>
+<h1>Memory Match</h1>
+<div id="stats">Moves: <span id="moves">0</span> &nbsp; Pairs: <span id="pairs">0</span>/8</div>
+<div id="board"></div>
+<button onclick="reset()">New game</button>
+<script>
+// 8 emoji pairs shuffled on the board
+const EMOJIS = ["🐶","🐱","🦊","🐼","🐸","🐵","🦄","🐝"];
+let first = null, lock = false, moves = 0, pairs = 0;
+
+function reset() {
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  const deck = EMOJIS.concat(EMOJIS).sort(() => Math.random() - 0.5);
+  deck.forEach(e => {
+    const c = document.createElement("button");
+    c.className = "card"; c.textContent = e; c.dataset.e = e;
+    c.onclick = () => flip(c);
+    board.appendChild(c);
+  });
+  first = null; lock = false; moves = 0; pairs = 0; update();
+}
+
+function update() {
+  document.getElementById("moves").textContent = moves;
+  document.getElementById("pairs").textContent = pairs;
+  if (pairs === 8) setTimeout(() => alert("You win in " + moves + " moves!"), 200);
+}
+
+function flip(c) {
+  if (lock || c.classList.contains("up") || c.classList.contains("done")) return;
+  c.classList.add("up");
+  if (!first) { first = c; return; }
+  moves++;
+  if (first.dataset.e === c.dataset.e) {
+    first.classList.add("done"); c.classList.add("done");
+    first = null; pairs++; update();
+  } else {
+    lock = true;
+    const a = first, b = c; first = null;
+    setTimeout(() => { a.classList.remove("up"); b.classList.remove("up"); lock = false; }, 600);
+  }
+  update();
+}
+reset();
+</script>
+</body>
+</html>
