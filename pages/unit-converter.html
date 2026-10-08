@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!-- Unit Converter: a tiny client-side length/weight/temperature converter. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Unit Converter</title>
+<style>
+  body { font-family: sans-serif; max-width: 420px; margin: 3em auto; text-align: center; }
+  select, input { font-size: 1.1em; padding: .4em; margin: .3em; }
+  #out { font-size: 1.6em; margin-top: 1em; color: #2a7; }
+</style>
+</head>
+<body>
+  <h1>🔁 Unit Converter</h1>
+  <select id="kind">
+    <option value="len">Length</option>
+    <option value="mass">Weight</option>
+    <option value="temp">Temperature</option>
+  </select><br>
+  <input id="val" type="number" value="1" placeholder="value">
+  <select id="from"></select> → <select id="to"></select>
+  <div id="out"></div>
+
+<script>
+  // Conversion tables: every unit expressed in the base unit of its kind.
+  const UNITS = {
+    len:  { m: 1, km: 1000, cm: 0.01, ft: 0.3048, mi: 1609.344 },
+    mass: { kg: 1, g: 0.001, lb: 0.45359237, oz: 0.0283495231 },
+    temp: { C: "c", F: "f", K: "k" }, // temperatures need formulas, not ratios
+  };
+
+  const kind = document.getElementById("kind");
+  const from = document.getElementById("from");
+  const to   = document.getElementById("to");
+  const val  = document.getElementById("val");
+  const out  = document.getElementById("out");
+
+  // Fill the from/to dropdowns for the chosen kind.
+  function refresh() {
+    const names = Object.keys(UNITS[kind.value]);
+    from.innerHTML = to.innerHTML = names.map(u => `<option>${u}</option>`).join("");
+    to.selectedIndex = names.length > 1 ? 1 : 0;
+    convert();
+  }
+
+  // Convert temperatures through Celsius as the pivot.
+  function tempConvert(v, a, b) {
+    const c = a === "C" ? v : a === "F" ? (v - 32) * 5/9 : v - 273.15;
+    return b === "C" ? c : b === "F" ? c * 9/5 + 32 : c + 273.15;
+  }
+
+  function convert() {
+    const v = parseFloat(val.value);
+    if (isNaN(v)) { out.textContent = "enter a number"; return; }
+    let r;
+    if (kind.value === "temp") {
+      r = tempConvert(v, from.value, to.value);
+    } else {
+      const t = UNITS[kind.value];
+      r = v * t[from.value] / t[to.value];
+    }
+    out.textContent = `${v} ${from.value} = ${r.toPrecision(6)} ${to.value}`;
+  }
+
+  kind.onchange = refresh;
+  from.onchange = to.onchange = val.oninput = convert;
+  refresh();
+</script>
+</body>
+</html>
