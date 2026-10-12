@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Simon Says</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #222; color: #fff; }
+  #pads { display: grid; grid-template-columns: 120px 120px; gap: 10px; justify-content: center; margin: 20px; }
+  .pad { width: 120px; height: 120px; border-radius: 12px; opacity: .5; cursor: pointer; }
+  .pad.lit { opacity: 1; box-shadow: 0 0 30px #fff; }
+  #red { background: #e33; } #green { background: #3e3; }
+  #blue { background: #39f; } #yellow { background: #ec3; }
+  button { font-size: 1.1em; padding: 8px 24px; margin-top: 10px; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Simon Says</h1>
+<p id="status">Press Start, then repeat the sequence!</p>
+<div id="pads">
+  <div class="pad" id="green"></div>
+  <div class="pad" id="red"></div>
+  <div class="pad" id="yellow"></div>
+  <div class="pad" id="blue"></div>
+</div>
+<p>Score: <span id="score">0</span></p>
+<button id="start">Start</button>
+<script>
+// Simple Simon game: watch the lit sequence, then repeat it by clicking.
+const pads = ["green", "red", "yellow", "blue"];
+let seq = [], pos = 0, accepting = false;
+
+function light(pad, ms) {
+  const el = document.getElementById(pad);
+  el.classList.add("lit");
+  setTimeout(() => el.classList.remove("lit"), ms);
+}
+function playSeq() {
+  accepting = false; pos = 0;
+  status("Watch carefully...");
+  seq.forEach((pad, i) => setTimeout(() => light(pad, 350), 700 * i + 400));
+  setTimeout(() => { accepting = true; status("Your turn!"); }, 700 * seq.length + 400);
+}
+function status(t) { document.getElementById("status").textContent = t; }
+document.getElementById("start").onclick = () => {
+  seq = []; document.getElementById("score").textContent = "0";
+  next();
+};
+function next() {
+  seq.push(pads[Math.floor(Math.random() * 4)]);
+  document.getElementById("score").textContent = seq.length - 1;
+  playSeq();
+}
+pads.forEach(pad => {
+  document.getElementById(pad).onclick = () => {
+    if (!accepting) return;
+    light(pad, 200);
+    if (pad === seq[pos]) {
+      pos++;
+      if (pos === seq.length) setTimeout(next, 600);
+    } else {
+      status("Wrong! Game over — hit Start to try again.");
+      accepting = false;
+    }
+  };
+});
+</script>
+</body>
+</html>
