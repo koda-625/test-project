@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tip Calculator</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 320px; margin: 3em auto; }
+  label { display: block; margin-top: 1em; }
+  input { width: 100%; padding: .4em; font-size: 1em; }
+  .result { margin-top: 1.5em; font-size: 1.2em; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>Tip Calculator</h1>
+<label>Bill amount ($): <input id="bill" type="number" min="0" step="0.01" value="50"></label>
+<label>Tip %: <input id="pct" type="number" min="0" step="1" value="15"></label>
+<label>Split among: <input id="people" type="number" min="1" step="1" value="1"></label>
+<div class="result" id="out"></div>
+<script>
+// Recompute tip, total and per-person share on any input change.
+function calc() {
+  const bill = Math.max(0, parseFloat(document.getElementById('bill').value) || 0);
+  const pct = Math.max(0, parseFloat(document.getElementById('pct').value) || 0);
+  const people = Math.max(1, parseInt(document.getElementById('people').value) || 1);
+  const tip = bill * pct / 100;
+  const total = bill + tip;
+  document.getElementById('out').textContent =
+    'Tip: $' + tip.toFixed(2) + ' | Total: $' + total.toFixed(2) +
+    ' | Each pays: $' + (total / people).toFixed(2);
+}
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>
