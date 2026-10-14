@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Scramble</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 3rem auto; text-align: center; padding: 0 1rem; }
+  #scrambled { font-size: 2.4rem; letter-spacing: .4rem; margin: 1.5rem 0; color: #6b46c1; font-weight: bold; }
+  input { font-size: 1.2rem; padding: .5rem; width: 70%; text-align: center; }
+  button { font-size: 1.1rem; padding: .5rem 1.2rem; margin: .4rem; cursor: pointer; }
+  #msg { min-height: 1.8rem; font-weight: bold; margin-top: .6rem; }
+  #score { color: #555; }
+</style>
+</head>
+<body>
+<h1>🔤 Word Scramble</h1>
+<p>Unscramble the letters to guess the word!</p>
+<div id="scrambled"></div>
+<input id="guess" placeholder="your guess" autocomplete="off">
+<div>
+  <button onclick="check()">Check</button>
+  <button onclick="skip()">Skip</button>
+</div>
+<p id="msg"></p>
+<p id="score">Score: 0 | Streak: 0</p>
+<script>
+// Small word list — shuffle the letters, guess the original.
+const WORDS = ["javascript", "puzzle", "keyboard", "rainbow", "penguin",
+               "guitar", "rocket", "compass", "turtle", "lantern",
+               "thunder", "pocket", "cactus", "waffle", "marble"];
+let word = "", score = 0, streak = 0;
+
+function scramble(w) {
+  // Shuffle until the order actually differs from the original.
+  let arr = w.split(""), s = w;
+  while (s === w) { arr.sort(() => Math.random() - .5); s = arr.join(""); }
+  return s;
+}
+function next() {
+  word = WORDS[Math.floor(Math.random() * WORDS.length)];
+  document.getElementById("scrambled").textContent = scramble(word).toUpperCase();
+  document.getElementById("guess").value = "";
+  document.getElementById("msg").textContent = "";
+  document.getElementById("guess").focus();
+}
+function updateScore() {
+  document.getElementById("score").textContent = `Score: ${score} | Streak: ${streak}`;
+}
+function check() {
+  const g = document.getElementById("guess").value.trim().toLowerCase();
+  const msg = document.getElementById("msg");
+  if (!g) return;
+  if (g === word) {
+    score += 10; streak++;
+    msg.textContent = `✅ Correct! "${word}"`; msg.style.color = "green";
+    updateScore(); setTimeout(next, 1200);
+  } else {
+    streak = 0; updateScore();
+    msg.textContent = "❌ Not quite, try again!"; msg.style.color = "red";
+  }
+}
+function skip() {
+  const msg = document.getElementById("msg");
+  msg.textContent = `It was "${word}" — new word!`; msg.style.color = "#888";
+  streak = 0; updateScore(); setTimeout(next, 1200);
+}
+document.getElementById("guess").addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+next(); updateScore();
+</script>
+</body>
+</html>
