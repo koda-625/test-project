@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Art Editor</title>
+<style>
+  body { font-family: system-ui, sans-serif; text-align: center; background: #1a1a2e; color: #eee; }
+  #grid { display: grid; grid-template-columns: repeat(12, 28px); gap: 2px;
+          justify-content: center; margin: 16px auto; }
+  .cell { width: 28px; height: 28px; background: #fff; border-radius: 3px; cursor: crosshair; }
+  #palette { margin: 12px; }
+  .swatch { width: 28px; height: 28px; display: inline-block; margin: 3px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent; }
+  .swatch.selected { border-color: #fff; }
+  button { margin: 8px; padding: 8px 16px; font-size: 14px; cursor: pointer;
+           border: none; border-radius: 6px; background: #e94560; color: #fff; }
+  button:hover { background: #ff5c75; }
+</style>
+</head>
+<body>
+<h1>🎨 Pixel Art Editor</h1>
+<p>Click cells to paint your 12×12 masterpiece.</p>
+<div id="palette"></div>
+<div id="grid"></div>
+<button id="clear">Clear</button>
+<button id="save">Save as PNG</button>
+<script>
+const colors = ["#ffffff", "#000000", "#e94560", "#ff9f1c", "#f9f871", "#2ec4b6", "#4361ee", "#9b5de5"];
+let current = colors[2];
+let painting = false;
+const grid = document.getElementById("grid");
+const palette = document.getElementById("palette");
+
+// Build the 12x12 canvas.
+for (let i = 0; i < 144; i++) {
+  const c = document.createElement("div");
+  c.className = "cell";
+  c.addEventListener("mousedown", () => { painting = true; c.style.background = current; });
+  c.addEventListener("mouseover", () => { if (painting) c.style.background = current; });
+  grid.appendChild(c);
+}
+document.addEventListener("mouseup", () => painting = false);
+
+// Build the color palette.
+colors.forEach((col, i) => {
+  const s = document.createElement("div");
+  s.className = "swatch" + (i === 2 ? " selected" : "");
+  s.style.background = col;
+  s.addEventListener("click", () => {
+    current = col;
+    document.querySelectorAll(".swatch").forEach(el => el.classList.remove("selected"));
+    s.classList.add("selected");
+  });
+  palette.appendChild(s);
+});
+
+// Clear everything back to white.
+document.getElementById("clear").addEventListener("click", () => {
+  document.querySelectorAll(".cell").forEach(c => c.style.background = "#fff");
+});
+
+// Render the grid onto a canvas and download it as PNG.
+document.getElementById("save").addEventListener("click", () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 240;
+  const ctx = canvas.getContext("2d");
+  document.querySelectorAll(".cell").forEach((c, i) => {
+    ctx.fillStyle = c.style.background || "#fff";
+    ctx.fillRect((i % 12) * 20, Math.floor(i / 12) * 20, 20, 20);
+  });
+  const a = document.createElement("a");
+  a.download = "pixel-art.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+});
+</script>
+</body>
+</html>
