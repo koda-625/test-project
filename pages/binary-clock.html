@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Clock</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #111; color: #eee; padding: 2rem; }
+  table { margin: 1rem auto; border-collapse: collapse; }
+  td { width: 52px; height: 52px; border-radius: 50%; border: 2px solid #555; margin: 6px; }
+  .on { background: #4fc3f7; border-color: #4fc3f7; box-shadow: 0 0 12px #4fc3f7; }
+  .off { background: transparent; }
+  .dim { background: #1b1b1b; border-color: #222; }
+  .label { color: #888; font-size: 0.8rem; }
+  h1 { font-size: 1.4rem; }
+  #digital { font-size: 2rem; letter-spacing: 0.2rem; margin-top: 0.5rem; }
+  p { color: #888; max-width: 480px; margin: 1rem auto; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<h1>🔵 Binary Clock</h1>
+<table id="grid"></table>
+<div id="digital"></div>
+<p>Each column is a digit of HH:MM:SS in BCD. Blue dots are 1s — add the row values (4, 2, 1) to decode each column.</p>
+<script>
+// Layout: 6 columns (H H M M S S), 4 rows (8, 4, 2, 1). Row 8 only used by tens columns.
+const rows = [8, 4, 2, 1];
+const grid = document.getElementById('grid');
+const cells = [];
+for (const r of rows) {
+  const tr = document.createElement('tr');
+  const row = [];
+  for (let c = 0; c < 6; c++) {
+    const td = document.createElement('td');
+    tr.appendChild(td);
+    row.push(td);
+  }
+  grid.appendChild(tr);
+  cells.push(row);
+}
+const labelRow = document.createElement('tr');
+for (const l of ['H', 'H', 'M', 'M', 'S', 'S']) {
+  const td = document.createElement('td');
+  td.textContent = l;
+  td.className = 'label';
+  labelRow.appendChild(td);
+}
+grid.appendChild(labelRow);
+
+function tick() {
+  const now = new Date();
+  const digits = ('' + String(now.getHours()).padStart(2, '0')
+    + String(now.getMinutes()).padStart(2, '0')
+    + String(now.getSeconds()).padStart(2, '0')).split('').map(Number);
+  digits.forEach((d, c) => {
+    rows.forEach((bit, r) => {
+      const cell = cells[r][c];
+      const tens = (c % 2 === 0); // tens columns never need the 8-row except hours
+      if (tens && bit === 8 && d < 8) {
+        cell.className = 'dim';   // unused dot for tens of M/S
+      } else {
+        cell.className = (d & bit) ? 'on' : 'off';
+      }
+    });
+  });
+  document.getElementById('digital').textContent =
+    now.toTimeString().slice(0, 8);
+}
+setInterval(tick, 1000);
+tick();
+</script>
+</body>
+</html>
