@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drum Pad</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #14141c; color: #eee;
+         text-align: center; padding: 2rem 1rem; margin: 0; }
+  h1 { margin-bottom: .3rem; }
+  p.hint { color: #999; margin-top: 0; }
+  .grid { display: grid; grid-template-columns: repeat(3, 100px);
+          gap: 12px; justify-content: center; margin-top: 1.5rem; }
+  .pad { height: 100px; border: none; border-radius: 14px; cursor: pointer;
+         font-size: .85rem; font-weight: bold; color: #fff;
+         transition: transform .06s, filter .06s; }
+  .pad:active { transform: scale(.93); filter: brightness(1.4); }
+  .pad.kick  { background: linear-gradient(135deg, #e53935, #8e1010); }
+  .pad.snare { background: linear-gradient(135deg, #fb8c00, #b25b00); }
+  .pad.hihat { background: linear-gradient(135deg, #fdd835, #9c8500); color: #222; }
+  .pad.tom   { background: linear-gradient(135deg, #43a047, #1b5e20); }
+  .pad.clap  { background: linear-gradient(135deg, #8e24aa, #4a148c); }
+  .pad.shaker{ background: linear-gradient(135deg, #00acc1, #006064); }
+</style>
+</head>
+<body>
+<h1>🥁 Drum Pad</h1>
+<p class="hint">Click a pad (or press 1–6) — sounds are synthesized live, no audio files.</p>
+<div class="grid">
+  <button class="pad kick"  data-s="kick">Kick<br><small>1</small></button>
+  <button class="pad snare" data-s="snare">Snare<br><small>2</small></button>
+  <button class="pad hihat" data-s="hihat">Hi-Hat<br><small>3</small></button>
+  <button class="pad tom"   data-s="tom">Tom<br><small>4</small></button>
+  <button class="pad clap"  data-s="clap">Clap<br><small>5</small></button>
+  <button class="pad shaker" data-s="shaker">Shaker<br><small>6</small></button>
+</div>
+<script>
+// Simple Web Audio drum synthesis.
+let ctx;
+function audio() { return ctx || (ctx = new (window.AudioContext || window.webkitAudioContext)()); }
+
+function noiseBuffer(c) {
+  const len = c.sampleRate * 0.4, buf = c.createBuffer(1, len, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return buf;
+}
+function env(g, t, peak, decay) {
+  g.gain.setValueAtTime(peak, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + decay);
+}
+
+function play(kind) {
+  const c = audio(), t = c.currentTime;
+  const g = c.createGain(); g.connect(c.destination);
+  if (kind === 'kick') {
+    const o = c.createOscillator();
+    o.frequency.setValueAtTime(160, t);
+    o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
+    env(g, t, 1, 0.3); o.connect(g); o.start(t); o.stop(t + 0.3);
+  } else if (kind === 'tom') {
+    const o = c.createOscillator();
+    o.frequency.setValueAtTime(220, t);
+    o.frequency.exponentialRampToValueAtTime(90, t + 0.15);
+    env(g, t, 0.9, 0.25); o.connect(g); o.start(t); o.stop(t + 0.25);
+  } else {
+    // Noise-based: snare, clap, hihat, shaker differ by filter + decay.
+    const n = c.createBufferSource(); n.buffer = noiseBuffer(c);
+    const f = c.createBiquadFilter();
+    if (kind === 'snare')      { f.type = 'bandpass'; f.frequency.value = 1800; env(g, t, 0.8, 0.18); }
+    else if (kind === 'clap')  { f.type = 'bandpass'; f.frequency.value = 1200; env(g, t, 0.7, 0.22); }
+    else if (kind === 'hihat') { f.type = 'highpass'; f.frequency.value = 7000; env(g, t, 0.5, 0.08); }
+    else /* shaker */          { f.type = 'highpass'; f.frequency.value = 5000; env(g, t, 0.4, 0.15); }
+    n.connect(f); f.connect(g); n.start(t); n.stop(t + 0.4);
+  }
+}
+
+document.querySelectorAll('.pad').forEach(p =>
+  p.addEventListener('click', () => play(p.dataset.s)));
+document.addEventListener('keydown', e => {
+  const pads = ['kick', 'snare', 'hihat', 'tom', 'clap', 'shaker'];
+  const i = parseInt(e.key, 10) - 1;
+  if (i >= 0 && i < 6) play(pads[i]);
+});
+</script>
+</body>
+</html>
