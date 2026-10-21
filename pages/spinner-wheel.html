@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Decision Spinner</title>
+<style>
+body { font-family: sans-serif; text-align: center; background: #1a1a2e; color: #eee; }
+canvas { margin-top: 10px; cursor: pointer; }
+input, button { margin: 4px; padding: 6px 10px; font-size: 14px; }
+#result { font-size: 22px; margin-top: 12px; min-height: 30px; color: #ffd166; }
+</style>
+</head>
+<body>
+<h1>Decision Spinner</h1>
+<p>Add options, then click the wheel to spin!</p>
+<input id="opt" placeholder="Add an option">
+<button onclick="addOpt()">Add</button>
+<button onclick="spin()">Spin</button><br>
+<canvas id="wheel" width="360" height="360"></canvas>
+<div id="result"></div>
+<script>
+// Options list; defaults so the wheel works out of the box.
+let options = ["Yes", "No", "Maybe", "Try again"];
+let angle = 0, spinning = false;
+
+function draw() {
+  const c = document.getElementById("wheel"), ctx = c.getContext("2d");
+  const n = options.length, slice = 2 * Math.PI / n;
+  ctx.clearRect(0, 0, 360, 360);
+  const colors = ["#ef476f","#ffd166","#06d6a0","#118ab2","#9b5de5","#f15bb5"];
+  for (let i = 0; i < n; i++) {
+    ctx.beginPath();
+    ctx.moveTo(180, 180);
+    ctx.arc(180, 180, 170, angle + i * slice, angle + (i + 1) * slice);
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.fill();
+    ctx.save();
+    ctx.translate(180, 180);
+    ctx.rotate(angle + (i + 0.5) * slice);
+    ctx.fillStyle = "#fff";
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(options[i].slice(0, 14), 160, 5);
+    ctx.restore();
+  }
+  // Pointer triangle at top.
+  ctx.fillStyle = "#eee";
+  ctx.beginPath(); ctx.moveTo(170, 0); ctx.lineTo(190, 0); ctx.lineTo(180, 20); ctx.fill();
+}
+
+function addOpt() {
+  const v = document.getElementById("opt").value.trim();
+  if (v) { options.push(v); document.getElementById("opt").value = ""; draw(); }
+}
+
+function spin() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById("result").textContent = "";
+  // Random total rotation with easing: decelerate over ~3s.
+  const extra = Math.random() * Math.PI * 2 + Math.PI * 8;
+  const start = angle, t0 = performance.now(), dur = 3000;
+  function frame(t) {
+    const p = Math.min((t - t0) / dur, 1);
+    angle = start + extra * (1 - Math.pow(1 - p, 3)); // ease-out cubic
+    draw();
+    if (p < 1) requestAnimationFrame(frame);
+    else {
+      spinning = false;
+      // Pointer at top: -PI/2. Find winning slice index.
+      const pos = ((-Math.PI / 2 - angle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      const idx = Math.floor(pos / (Math.PI * 2 / options.length));
+      document.getElementById("result").textContent = "Result: " + options[idx];
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+document.getElementById("wheel").addEventListener("click", spin);
+draw();
+</script>
+</body>
+</html>
