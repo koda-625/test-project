@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ripple Pond</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #06121f;
+               font-family: sans-serif; cursor: crosshair; }
+  canvas { display: block; }
+  #hint { position: fixed; top: 14px; width: 100%; text-align: center;
+          color: #7fb3c8; font-size: 15px; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="hint">Click anywhere to drop a pebble &mdash; watch the ripples spread</div>
+<canvas id="pond"></canvas>
+<script>
+// Ripple Pond: click to spawn expanding ripples that fade with distance.
+const canvas = document.getElementById('pond');
+const ctx = canvas.getContext('2d');
+const ripples = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// A pebble creates one ripple + a few echo ripples for realism.
+canvas.addEventListener('click', (e) => {
+  ripples.push({ x: e.clientX, y: e.clientY, r: 2, alpha: 0.9 });
+  setTimeout(() => ripples.push({ x: e.clientX, y: e.clientY, r: 2, alpha: 0.6 }), 160);
+  setTimeout(() => ripples.push({ x: e.clientX, y: e.clientY, r: 2, alpha: 0.35 }), 320);
+});
+
+function draw() {
+  // Dark water fade leaves a subtle motion trail.
+  ctx.fillStyle = 'rgba(6, 18, 31, 0.12)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const p = ripples[i];
+    p.r += 1.6;
+    p.alpha -= 0.004;
+    if (p.alpha <= 0) { ripples.splice(i, 1); continue; }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(140, 220, 255, ${p.alpha})`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  requestAnimationFrame(draw);
+}
+
+// Greet the visitor with one pebble at the center.
+ripples.push({ x: canvas.width / 2, y: canvas.height / 2, r: 2, alpha: 0.9 });
+draw();
+</script>
+</body>
+</html>
