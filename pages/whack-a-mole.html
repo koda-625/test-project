@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Whack-a-Mole</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #e8f5e9; }
+  #board { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px;
+           justify-content: center; margin: 20px auto; }
+  .hole { width: 100px; height: 100px; background: #8d6e63; border-radius: 50%;
+          font-size: 48px; line-height: 100px; cursor: pointer; user-select: none; }
+  .hole.up { background: #a5d6a7; }
+  button { font-size: 18px; padding: 8px 20px; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>🐹 Whack-a-Mole</h1>
+<p>Score: <span id="score">0</span> &nbsp;|&nbsp; Time left: <span id="time">30</span>s</p>
+<button id="start">Start game</button>
+<div id="board"></div>
+<p id="msg">Press Start, then bonk every mole that pops up!</p>
+<script>
+  // Build the 3x3 board of holes.
+  const board = document.getElementById('board');
+  const holes = [];
+  for (let i = 0; i < 9; i++) {
+    const hole = document.createElement('div');
+    hole.className = 'hole';
+    hole.addEventListener('click', () => {
+      // Only a visible mole counts as a hit.
+      if (hole.classList.contains('up')) {
+        score++;
+        document.getElementById('score').textContent = score;
+        hole.classList.remove('up');
+        hole.textContent = '';
+      }
+    });
+    board.appendChild(hole);
+    holes.push(hole);
+  }
+
+  let score = 0, timer = null, moleTimer = null, timeLeft = 30;
+
+  document.getElementById('start').addEventListener('click', () => {
+    // Reset state and start both timers.
+    score = 0; timeLeft = 30;
+    document.getElementById('score').textContent = 0;
+    document.getElementById('time').textContent = 30;
+    document.getElementById('msg').textContent = 'Go!';
+    clearInterval(timer); clearInterval(moleTimer);
+    moleTimer = setInterval(() => {
+      holes.forEach(h => { h.classList.remove('up'); h.textContent = ''; });
+      const mole = holes[Math.floor(Math.random() * holes.length)];
+      mole.classList.add('up');
+      mole.textContent = '🐹';
+    }, 700);
+    timer = setInterval(() => {
+      timeLeft--;
+      document.getElementById('time').textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timer); clearInterval(moleTimer);
+        holes.forEach(h => { h.classList.remove('up'); h.textContent = ''; });
+        document.getElementById('msg').textContent = `Time's up! Final score: ${score}`;
+      }
+    }, 1000);
+  });
+</script>
+</body>
+</html>
