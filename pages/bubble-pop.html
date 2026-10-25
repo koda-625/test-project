@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Pop</title>
+<style>
+  /* Simple styling: dark sky, floating bubbles, big score display */
+  body { margin: 0; height: 100vh; overflow: hidden; background: #0b1e3a;
+         font-family: sans-serif; color: #fff; text-align: center; }
+  #hud { padding: 16px; font-size: 20px; }
+  #start { font-size: 18px; padding: 10px 24px; cursor: pointer; }
+  .bubble { position: absolute; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #bfe9ff, #3b82f6);
+            opacity: 0.85; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="hud">Score: <span id="score">0</span> &nbsp;|&nbsp; Time: <span id="time">30</span>s</div>
+<button id="start">Start popping!</button>
+<script>
+  // Game state
+  let score = 0, seconds = 30, timer = null, spawner = null;
+  const scoreEl = document.getElementById('score');
+  const timeEl = document.getElementById('time');
+  const startBtn = document.getElementById('start');
+
+  // Spawn one bubble at a random position and size; it pops on click
+  function spawnBubble() {
+    const size = 30 + Math.random() * 60;
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.style.width = b.style.height = size + 'px';
+    b.style.left = Math.random() * (innerWidth - size) + 'px';
+    b.style.top = Math.random() * (innerHeight - size - 80) + 60 + 'px';
+    b.onclick = () => { score++; scoreEl.textContent = score; b.remove(); };
+    document.body.appendChild(b);
+    // Unpopped bubbles drift away after 2.5s
+    setTimeout(() => b.remove(), 2500);
+  }
+
+  // Start a 30-second round
+  startBtn.onclick = () => {
+    score = 0; seconds = 30;
+    scoreEl.textContent = score; timeEl.textContent = seconds;
+    startBtn.disabled = true;
+    spawner = setInterval(spawnBubble, 400);
+    timer = setInterval(() => {
+      seconds--; timeEl.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(timer); clearInterval(spawner);
+        startBtn.disabled = false;
+        alert('Time up! You popped ' + score + ' bubbles.');
+      }
+    }, 1000);
+  };
+</script>
+</body>
+</html>
