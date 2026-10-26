@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic-Tac-Toe</title>
+<style>
+  /* Simple centered layout, no dependencies */
+  body { font-family: system-ui, sans-serif; text-align: center; background: #f6f3ee; color: #222; }
+  h1 { margin-top: 2rem; }
+  #status { font-size: 1.2rem; margin: 1rem 0; min-height: 1.5em; }
+  #board { display: grid; grid-template-columns: repeat(3, 90px); gap: 8px; justify-content: center; }
+  .cell { width: 90px; height: 90px; font-size: 2.5rem; background: #fff; border: 2px solid #ccc;
+          border-radius: 12px; cursor: pointer; }
+  .cell:disabled { cursor: default; }
+  button#reset { margin-top: 1.5rem; padding: 0.5rem 1.5rem; font-size: 1rem; border-radius: 8px; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Tic-Tac-Toe</h1>
+<p id="status">Player X, your turn!</p>
+<div id="board"></div>
+<button id="reset">New Game</button>
+<script>
+  // Two-player tic-tac-toe on a 3x3 grid.
+  const boardEl = document.getElementById('board');
+  const statusEl = document.getElementById('status');
+  const cells = [];
+  let current = 'X';
+  let gameOver = false;
+
+  // All winning lines: 3 rows, 3 columns, 2 diagonals.
+  const wins = [
+    [0,1,2],[3,4,5],[6,7,8], // rows
+    [0,3,6],[1,4,7],[2,5,8], // columns
+    [0,4,8],[2,4,6]           // diagonals
+  ];
+
+  function checkWinner() {
+    for (const [a,b,c] of wins) {
+      if (cells[a].textContent && cells[a].textContent === cells[b].textContent
+          && cells[a].textContent === cells[c].textContent) {
+        return cells[a].textContent;
+      }
+    }
+    return null;
+  }
+
+  function handleClick(i) {
+    if (gameOver || cells[i].textContent) return;
+    cells[i].textContent = current;
+    cells[i].disabled = true;
+    const winner = checkWinner();
+    if (winner) {
+      statusEl.textContent = 'Player ' + winner + ' wins!';
+      gameOver = true;
+    } else if (cells.every(cell => cell.textContent)) {
+      statusEl.textContent = "It's a draw!";
+      gameOver = true;
+    } else {
+      current = current === 'X' ? 'O' : 'X';
+      statusEl.textContent = 'Player ' + current + ', your turn!';
+    }
+  }
+
+  function newGame() {
+    current = 'X';
+    gameOver = false;
+    statusEl.textContent = 'Player X, your turn!';
+    cells.forEach(cell => { cell.textContent = ''; cell.disabled = false; });
+  }
+
+  // Build the 9 cells once.
+  for (let i = 0; i < 9; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'cell';
+    btn.addEventListener('click', () => handleClick(i));
+    boardEl.appendChild(btn);
+    cells.push(btn);
+  }
+  document.getElementById('reset').addEventListener('click', newGame);
+</script>
+</body>
+</html>
