@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quote Generator</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 600px; margin: 80px auto; padding: 20px; text-align: center; background: #fdf6ec; color: #333; }
+  blockquote { font-size: 1.5em; line-height: 1.5; min-height: 120px; }
+  cite { display: block; margin-top: 12px; font-size: 0.7em; color: #888; font-style: normal; }
+  button { padding: 12px 24px; font-size: 1em; border: none; border-radius: 8px; background: #e67e22; color: #fff; cursor: pointer; }
+  button:hover { background: #d35400; }
+</style>
+</head>
+<body>
+<h1>💡 Quote Generator</h1>
+<blockquote id="quote">Click the button for a fresh thought.</blockquote>
+<cite id="author"></cite>
+<p><button onclick="newQuote()">New Quote</button></p>
+<script>
+  // A small hand-picked set of timeless quotes.
+  const quotes = [
+    ["The best way out is always through.", "Robert Frost"],
+    ["Simplicity is the soul of efficiency.", "Austin Freeman"],
+    ["What we think, we become.", "Buddha"],
+    ["Action is the foundational key to all success.", "Pablo Picasso"],
+    ["It always seems impossible until it's done.", "Nelson Mandela"],
+    ["Stay hungry, stay foolish.", "Steve Jobs"],
+    ["The journey of a thousand miles begins with one step.", "Lao Tzu"],
+    ["Well done is better than well said.", "Benjamin Franklin"]
+  ];
+  let last = -1;
+  function newQuote() {
+    // Pick a quote different from the previous one.
+    let i;
+    do { i = Math.floor(Math.random() * quotes.length); } while (i === last);
+    last = i;
+    document.getElementById("quote").textContent = "\u201C" + quotes[i][0] + "\u201D";
+    document.getElementById("author").textContent = "— " + quotes[i][1];
+  }
+  newQuote(); // Show one right away on load.
+</script>
+</body>
+</html>
