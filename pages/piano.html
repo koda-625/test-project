@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Piano</title>
+<style>
+  body { font-family: system-ui, sans-serif; text-align: center; background: #1e1e2e; color: #eee; margin: 0; padding: 40px 10px; }
+  h1 { margin-bottom: 4px; }
+  p { color: #aaa; margin-top: 0; }
+  .piano { position: relative; display: inline-block; height: 220px; user-select: none; }
+  .white { display: inline-block; width: 56px; height: 220px; background: #fff; border: 1px solid #999; border-radius: 0 0 6px 6px; cursor: pointer; color: #666; line-height: 400px; font-size: 13px; box-sizing: border-box; }
+  .white:active, .white.playing { background: #cde7ff; }
+  .black { position: absolute; top: 0; width: 36px; height: 140px; background: #222; border-radius: 0 0 5px 5px; cursor: pointer; color: #aaa; line-height: 250px; font-size: 11px; z-index: 1; }
+  .black:active, .black.playing { background: #444; }
+</style>
+</head>
+<body>
+<h1>🎹 Mini Piano</h1>
+<p>Click the keys or press A W S E D F T G Y H U J K to play one octave (C4–C5).</p>
+<div class="piano" id="piano"></div>
+<script>
+  // One octave: white keys C D E F G A B C, black keys C# D# F# G# A#
+  const notes = [
+    { name: 'C4', freq: 261.63, black: false, key: 'a' },
+    { name: 'C#4', freq: 277.18, black: true, key: 'w' },
+    { name: 'D4', freq: 293.66, black: false, key: 's' },
+    { name: 'D#4', freq: 311.13, black: true, key: 'e' },
+    { name: 'E4', freq: 329.63, black: false, key: 'd' },
+    { name: 'F4', freq: 349.23, black: false, key: 'f' },
+    { name: 'F#4', freq: 369.99, black: true, key: 't' },
+    { name: 'G4', freq: 392.00, black: false, key: 'g' },
+    { name: 'G#4', freq: 415.30, black: true, key: 'y' },
+    { name: 'A4', freq: 440.00, black: false, key: 'h' },
+    { name: 'A#4', freq: 466.16, black: true, key: 'u' },
+    { name: 'B4', freq: 493.88, black: false, key: 'j' },
+    { name: 'C5', freq: 523.25, black: false, key: 'k' },
+  ];
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  function play(freq) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.8);
+  }
+  const piano = document.getElementById('piano');
+  let whiteIndex = 0;
+  const keyMap = {};
+  notes.forEach(n => {
+    const el = document.createElement('div');
+    el.className = n.black ? 'black' : 'white';
+    el.textContent = n.name;
+    if (n.black) {
+      // Position each black key on the boundary between its neighboring white keys
+      el.style.left = (whiteIndex * 56 - 18) + 'px';
+    } else {
+      whiteIndex++;
+    }
+    el.addEventListener('mousedown', () => { play(n.freq); el.classList.add('playing'); });
+    el.addEventListener('mouseup', () => el.classList.remove('playing'));
+    el.addEventListener('mouseleave', () => el.classList.remove('playing'));
+    piano.appendChild(el);
+    keyMap[n.key] = { freq: n.freq, el };
+  });
+  document.addEventListener('keydown', e => {
+    const k = keyMap[e.key.toLowerCase()];
+    if (k && !e.repeat) { play(k.freq); k.el.classList.add('playing'); }
+  });
+  document.addEventListener('keyup', e => {
+    const k = keyMap[e.key.toLowerCase()];
+    if (k) k.el.classList.remove('playing');
+  });
+</script>
+</body>
+</html>
