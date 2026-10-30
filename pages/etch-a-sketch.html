@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Etch-a-Sketch</title>
+<style>
+  body { font-family: sans-serif; text-align: center; }
+  #grid { display: grid; grid-template-columns: repeat(24, 20px); gap: 1px;
+          width: fit-content; margin: 1em auto; background: #ccc; }
+  #grid div { width: 20px; height: 20px; background: #fff; }
+  button { margin: 0.3em; padding: 0.4em 1em; }
+</style>
+</head>
+<body>
+<h1>Etch-a-Sketch</h1>
+<p>Drag across the grid to draw. Pick a color, or shake it clear!</p>
+<input type="color" id="color" value="#e63946">
+<button onclick="clearGrid()">Shake to Clear</button>
+<div id="grid"></div>
+<script>
+  // Build a 24x24 drawing grid; painting happens on mouse drag.
+  const grid = document.getElementById('grid');
+  const color = document.getElementById('color');
+  let drawing = false;
+  for (let i = 0; i < 24 * 24; i++) {
+    const cell = document.createElement('div');
+    cell.addEventListener('mouseenter', () => { if (drawing) cell.style.background = color.value; });
+    cell.addEventListener('mousedown', (e) => { e.preventDefault(); drawing = true; cell.style.background = color.value; });
+    grid.appendChild(cell);
+  }
+  document.addEventListener('mouseup', () => drawing = false);
+  function clearGrid() {
+    grid.querySelectorAll('div').forEach(c => c.style.background = '#fff');
+  }
+</script>
+</body>
+</html>
