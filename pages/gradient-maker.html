@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradient Maker</title>
+<style>
+  body { font-family: sans-serif; text-align: center; margin: 2em; }
+  #preview { height: 200px; border-radius: 12px; margin: 1em auto; max-width: 500px; }
+  input[type="color"] { width: 60px; height: 40px; border: none; cursor: pointer; }
+  button { padding: 0.5em 1.2em; font-size: 1em; cursor: pointer; }
+  code { display: block; margin-top: 1em; background: #f0f0f0; padding: 0.6em; border-radius: 6px; }
+</style>
+</head>
+<body>
+<h1>🎨 Gradient Maker</h1>
+<p>Pick two colors, or hit Random for a surprise blend.</p>
+<!-- Two color pickers drive the gradient -->
+<label>From <input type="color" id="c1" value="#ff6b6b"></label>
+<label>To <input type="color" id="c2" value="#4ecdc4"></label>
+<button onclick="randomize()">🎲 Random</button>
+<div id="preview"></div>
+<code id="css"></code>
+<button onclick="copyCss()">📋 Copy CSS</button>
+<script>
+  // Rebuild the gradient preview and CSS snippet from the pickers.
+  function update() {
+    const a = document.getElementById('c1').value;
+    const b = document.getElementById('c2').value;
+    const g = `linear-gradient(135deg, ${a}, ${b})`;
+    document.getElementById('preview').style.background = g;
+    document.getElementById('css').textContent = `background: ${g};`;
+  }
+  // Roll two random hex colors and refresh the preview.
+  function randomize() {
+    const rand = () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+    document.getElementById('c1').value = rand();
+    document.getElementById('c2').value = rand();
+    update();
+  }
+  // Copy the CSS snippet to the clipboard.
+  function copyCss() {
+    navigator.clipboard.writeText(document.getElementById('css').textContent);
+  }
+  document.getElementById('c1').addEventListener('input', update);
+  document.getElementById('c2').addEventListener('input', update);
+  update();
+</script>
+</body>
+</html>
