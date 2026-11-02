@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kaleidoscope</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #111; color: #eee; margin: 0; padding: 20px; }
+  canvas { background: #000; border-radius: 50%; cursor: crosshair; touch-action: none; }
+  button { margin: 10px 5px; padding: 8px 16px; font-size: 16px; cursor: pointer; }
+  label { margin-left: 10px; }
+</style>
+</head>
+<body>
+<h1>🔮 Kaleidoscope</h1>
+<p>Drag on the circle to paint — every stroke mirrors around the center.</p>
+<canvas id="c" width="480" height="480"></canvas>
+<div>
+  <label>Mirrors: <input id="mirrors" type="range" min="4" max="24" step="2" value="12"></label>
+  <span id="count">12</span>
+  <button id="clear">Clear</button>
+  <button id="random">Random color</button>
+</div>
+<script>
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const cx = 240, cy = 240;
+  let drawing = false, last = null, color = '#ff5da2';
+  const mirrorsInput = document.getElementById('mirrors');
+  const count = document.getElementById('count');
+  mirrorsInput.addEventListener('input', () => count.textContent = mirrorsInput.value);
+
+  // Clip drawing to the circle so strokes never spill outside.
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * 480 / r.width, y: (e.clientY - r.top) * 480 / r.height };
+  }
+  function drawSegment(p1, p2) {
+    const n = +mirrorsInput.value;
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineCap = 'round';
+    for (let i = 0; i < n; i++) {
+      const a = i * Math.PI * 2 / n;
+      const rot = (p) => {
+        const dx = p.x - cx, dy = p.y - cy;
+        return { x: cx + dx * Math.cos(a) - dy * Math.sin(a), y: cy + dx * Math.sin(a) + dy * Math.cos(a) };
+      };
+      const r1 = rot(p1), r2 = rot(p2);
+      // Each segment is drawn twice: once rotated, once mirrored.
+      ctx.beginPath(); ctx.moveTo(r1.x, r1.y); ctx.lineTo(r2.x, r2.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2 * cx - r1.x, r1.y); ctx.lineTo(2 * cx - r2.x, r2.y); ctx.stroke();
+    }
+  }
+  function start(e) { drawing = true; last = pos(e); }
+  function move(e) {
+    if (!drawing) return;
+    const p = pos(e);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, 240, 0, Math.PI * 2); ctx.clip();
+    drawSegment(last, p);
+    ctx.restore();
+    last = p;
+  }
+  function stop() { drawing = false; last = null; }
+  canvas.addEventListener('pointerdown', start);
+  canvas.addEventListener('pointermove', move);
+  canvas.addEventListener('pointerup', stop);
+  canvas.addEventListener('pointerleave', stop);
+  document.getElementById('clear').addEventListener('click', () => ctx.clearRect(0, 0, 480, 480));
+  document.getElementById('random').addEventListener('click', () => {
+    color = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+  });
+</script>
+</body>
+</html>
