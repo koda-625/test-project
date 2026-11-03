@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Haiku Generator</title>
+<style>
+  body { font-family: Georgia, serif; text-align: center; padding: 60px 20px; background: #fdf6ec; color: #333; }
+  h1 { font-size: 2em; }
+  #haiku { font-size: 1.4em; line-height: 1.8; margin: 30px auto; min-height: 110px; white-space: pre-line; }
+  button { font-size: 1em; padding: 10px 24px; border: none; border-radius: 8px; background: #e07a5f; color: white; cursor: pointer; }
+  button:hover { background: #c96a52; }
+</style>
+</head>
+<body>
+<h1>🍂 Haiku Generator</h1>
+<p>Click for a fresh three-line poem.</p>
+<div id="haiku">Press the button to begin.</div>
+<button onclick="generate()">New Haiku</button>
+<script>
+  // Each array holds one line's worth of fragments; a haiku is one pick from each.
+  const first = [
+    "Autumn leaves drift down", "Silent snow on rooftops", "Morning mist rises",
+    "Cherry blossoms fall", "A frog leaps in the pond", "Cicadas sing at dusk"
+  ];
+  const second = [
+    "over the quiet old stone bridge", "through the bamboo grove at dawn",
+    "across the still and silver lake", "beneath a sky of drifting clouds"
+  ];
+  const third = [
+    "winter whispers near.", "spring wakes the sleepy earth.", "summer fades to gold.",
+    "night falls soft and slow.", "the mountain holds its breath."
+  ];
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function generate() {
+    document.getElementById("haiku").textContent =
+      pick(first) + "\n" + pick(second) + "\n" + pick(third);
+  }
+</script>
+</body>
+</html>
