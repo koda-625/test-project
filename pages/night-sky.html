@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Night Sky</title>
+<style>
+  /* Full-screen canvas; dark sky, minimal UI on top. */
+  body { margin: 0; overflow: hidden; background: #050514; font-family: sans-serif; }
+  canvas { display: block; }
+  .panel { position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+           color: #cdd6ff; text-align: center; pointer-events: none; }
+  button { pointer-events: auto; margin-top: 8px; padding: 8px 16px; border: 0;
+           border-radius: 20px; background: #7c9cff; color: #fff; cursor: pointer; }
+  button:hover { background: #5f7fe8; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <div>Click anywhere to launch a shooting star ✨</div>
+  <button id="meteor">Launch a meteor shower</button>
+</div>
+<canvas id="sky"></canvas>
+<script>
+  // Twinkling stars + click-triggered shooting stars, all on one canvas.
+  const canvas = document.getElementById('sky');
+  const ctx = canvas.getContext('2d');
+  let stars = [], meteors = [];
+  function resize() {
+    canvas.width = innerWidth; canvas.height = innerHeight;
+    stars = Array.from({ length: 220 }, () => ({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.6 + 0.4, phase: Math.random() * Math.PI * 2,
+      speed: 0.01 + Math.random() * 0.03
+    }));
+  }
+  resize(); addEventListener('resize', resize);
+  function launch(x, y) {
+    meteors.push({ x, y, vx: 6 + Math.random() * 4, vy: 2 + Math.random() * 2, life: 1 });
+  }
+  canvas.addEventListener('click', e => launch(e.clientX, e.clientY));
+  document.getElementById('meteor').addEventListener('click', e => {
+    e.stopPropagation();
+    for (let i = 0; i < 8; i++) setTimeout(() => launch(Math.random() * canvas.width, Math.random() * canvas.height * 0.4), i * 150);
+  });
+  function frame(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const s of stars) { // twinkle by varying alpha with a sine wave
+      ctx.globalAlpha = 0.4 + 0.6 * Math.abs(Math.sin(t * 0.001 * s.speed * 60 + s.phase));
+      ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    meteors = meteors.filter(m => m.life > 0);
+    for (const m of meteors) {
+      m.x += m.vx; m.y += m.vy; m.life -= 0.02;
+      const grad = ctx.createLinearGradient(m.x, m.y, m.x - m.vx * 12, m.y - m.vy * 12);
+      grad.addColorStop(0, `rgba(255,255,255,${m.life})`); grad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.strokeStyle = grad; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.moveTo(m.x, m.y); ctx.lineTo(m.x - m.vx * 12, m.y - m.vy * 12); ctx.stroke();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>
