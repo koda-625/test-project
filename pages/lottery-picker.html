@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lottery Picker</title>
+<style>
+  body { font-family: system-ui, sans-serif; text-align: center; background: #1a1a2e; color: #eee; padding: 2rem; }
+  h1 { color: #ffd700; }
+  .balls { display: flex; gap: 12px; justify-content: center; margin: 2rem 0; flex-wrap: wrap; min-height: 64px; }
+  .ball { width: 56px; height: 56px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffd700 60%, #c9a227);
+          color: #1a1a2e; font-weight: bold; font-size: 1.4rem; display: flex; align-items: center; justify-content: center;
+          animation: pop .3s ease-out; box-shadow: 0 4px 12px rgba(0,0,0,.5); }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  button { font-size: 1.1rem; padding: .7rem 1.6rem; border: none; border-radius: 8px; background: #ffd700; color: #1a1a2e;
+           font-weight: bold; cursor: pointer; }
+  button:hover { background: #ffe14d; }
+  label { margin-right: .5rem; }
+  input { width: 60px; font-size: 1rem; padding: .3rem; border-radius: 6px; border: 1px solid #555; background: #222; color: #eee; }
+  .controls { margin: 1rem 0; display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap; }
+  #lucky { margin-top: 1rem; color: #9fd8ff; min-height: 1.5em; }
+</style>
+</head>
+<body>
+<h1>🎱 Lottery Picker</h1>
+<p>Pick your lucky numbers — or let fate decide.</p>
+<div class="controls">
+  <label>Count: <input id="count" type="number" min="1" max="10" value="6"></label>
+  <label>Max number: <input id="max" type="number" min="10" max="99" value="49"></label>
+</div>
+<button onclick="draw()">Draw Numbers</button>
+<div class="balls" id="balls"></div>
+<p id="lucky"></p>
+<script>
+  // Draw `count` unique random numbers from 1..max, reveal one ball at a time.
+  function draw() {
+    const count = Math.min(10, Math.max(1, +document.getElementById('count').value || 6));
+    const max = Math.min(99, Math.max(10, +document.getElementById('max').value || 49));
+    const pool = Array.from({length: max}, (_, i) => i + 1);
+    const picked = [];
+    for (let i = 0; i < count; i++) {
+      picked.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    }
+    picked.sort((a, b) => a - b);
+    const box = document.getElementById('balls');
+    box.innerHTML = '';
+    document.getElementById('lucky').textContent = '';
+    picked.forEach((n, i) => {
+      setTimeout(() => {
+        const ball = document.createElement('div');
+        ball.className = 'ball';
+        ball.textContent = n;
+        box.appendChild(ball);
+      }, i * 250);
+    });
+    setTimeout(() => {
+      document.getElementById('lucky').textContent =
+        'Your numbers: ' + picked.join(' – ') + '. Good luck! 🍀';
+    }, picked.length * 250);
+  }
+  draw(); // Draw once on load.
+</script>
+</body>
+</html>
