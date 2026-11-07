@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flashcards</title>
+<style>
+  body { font-family: sans-serif; background: #f0f4ff; display: flex; flex-direction: column; align-items: center; padding: 40px 16px; }
+  h1 { color: #333; }
+  .card { width: 320px; height: 200px; perspective: 800px; cursor: pointer; }
+  .inner { width: 100%; height: 100%; position: relative; transition: transform .5s; transform-style: preserve-3d; }
+  .card.flipped .inner { transform: rotateY(180deg); }
+  .face { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.15); backface-visibility: hidden; font-size: 1.2rem; }
+  .front { background: #fff; color: #222; }
+  .back { background: #4f46e5; color: #fff; transform: rotateY(180deg); }
+  .controls { margin-top: 20px; display: flex; gap: 10px; }
+  button { padding: 10px 18px; font-size: 1rem; border: none; border-radius: 8px; background: #4f46e5; color: #fff; cursor: pointer; }
+  button:hover { background: #4338ca; }
+  .counter { margin-top: 12px; color: #666; }
+  .hint { color: #888; font-size: .9rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>🃏 Flashcards</h1>
+<div class="card" id="card" onclick="flip()">
+  <div class="inner">
+    <div class="face front" id="front"></div>
+    <div class="face back" id="back"></div>
+  </div>
+</div>
+<p class="hint">Click the card to flip it</p>
+<div class="controls">
+  <button onclick="prev()">← Prev</button>
+  <button onclick="shuffle()">🔀 Shuffle</button>
+  <button onclick="next()">Next →</button>
+</div>
+<div class="counter" id="counter"></div>
+<script>
+  // Simple deck of general-knowledge flashcards (question / answer).
+  const deck = [
+    ["What is the capital of Australia?", "Canberra"],
+    ["How many sides does a hexagon have?", "Six"],
+    ["What planet is known as the Red Planet?", "Mars"],
+    ["What is the chemical symbol for gold?", "Au"],
+    ["Which ocean is the largest?", "The Pacific Ocean"],
+    ["What year did humans first land on the Moon?", "1969"],
+    ["How many minutes are in a full week?", "10,080"],
+    ["What is the largest mammal in the world?", "The blue whale"],
+  ];
+  let index = 0;
+  const card = document.getElementById("card");
+  function show() {
+    card.classList.remove("flipped");
+    document.getElementById("front").textContent = deck[index][0];
+    document.getElementById("back").textContent = deck[index][1];
+    document.getElementById("counter").textContent = `Card ${index + 1} of ${deck.length}`;
+  }
+  function flip() { card.classList.toggle("flipped"); }
+  function next() { index = (index + 1) % deck.length; show(); }
+  function prev() { index = (index - 1 + deck.length) % deck.length; show(); }
+  function shuffle() {
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    index = 0; show();
+  }
+  show();
+</script>
+</body>
+</html>
