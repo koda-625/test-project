@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tap Tempo — BPM Meter</title>
+<style>
+  body { font-family: system-ui, sans-serif; text-align: center; margin: 0;
+         min-height: 100vh; display: flex; flex-direction: column;
+         justify-content: center; background: #111827; color: #f9fafb; }
+  h1 { font-size: 1.6rem; margin-bottom: .2rem; }
+  p  { color: #9ca3af; }
+  #bpm { font-size: 5rem; font-weight: 800; margin: .5rem 0; }
+  #label { color: #9ca3af; letter-spacing: .2em; text-transform: uppercase; font-size: .8rem; }
+  #tap { width: 180px; height: 180px; border-radius: 50%; border: none;
+         background: #f59e0b; color: #111827; font-size: 1.4rem; font-weight: 700;
+         cursor: pointer; margin: 1.5rem auto; transition: transform .05s; }
+  #tap:active { transform: scale(.93); background: #fbbf24; }
+  #reset { background: none; border: 1px solid #4b5563; color: #d1d5db;
+           padding: .5rem 1.2rem; border-radius: 999px; cursor: pointer; }
+  #reset:hover { border-color: #9ca3af; }
+  #history { color: #6b7280; font-size: .85rem; margin-top: 1rem; min-height: 1.2em; }
+</style>
+</head>
+<body>
+  <h1>🥁 Tap Tempo</h1>
+  <p>Tap the button to the beat of a song — we'll measure the BPM.</p>
+  <div id="bpm">—</div>
+  <div id="label">beats per minute</div>
+  <button id="tap">TAP</button>
+  <div><button id="reset">Reset</button></div>
+  <div id="history"></div>
+  <script>
+    const taps = [];          // timestamps of recent taps (ms)
+    const bpmEl = document.getElementById('bpm');
+    const histEl = document.getElementById('history');
+
+    document.getElementById('tap').addEventListener('click', () => {
+      const now = performance.now();
+      // A pause longer than 2s starts a fresh measurement.
+      if (taps.length && now - taps[taps.length - 1] > 2000) taps.length = 0;
+      taps.push(now);
+      if (taps.length > 8) taps.shift();   // keep only the last 8 taps
+
+      if (taps.length > 1) {
+        // Average interval between taps -> BPM.
+        const span = taps[taps.length - 1] - taps[0];
+        const avg = span / (taps.length - 1);
+        const bpm = Math.round(60000 / avg);
+        bpmEl.textContent = bpm;
+        histEl.textContent = `${taps.length} taps · last interval ${Math.round(avg)} ms`;
+      } else {
+        bpmEl.textContent = '—';
+        histEl.textContent = 'Keep tapping…';
+      }
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      taps.length = 0;
+      bpmEl.textContent = '—';
+      histEl.textContent = '';
+    });
+  </script>
+</body>
+</html>
