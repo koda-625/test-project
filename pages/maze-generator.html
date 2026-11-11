@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Maze Generator</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #f4f1ea; }
+  canvas { background: #fff; border: 2px solid #333; margin: 12px; }
+  button { font-size: 16px; padding: 8px 18px; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>🌀 Maze Generator</h1>
+<p>Every click grows a brand-new maze. Can you trace a path from the top-left to the bottom-right?</p>
+<button id="gen">Generate a new maze</button>
+<br>
+<canvas id="maze" width="400" height="400"></canvas>
+<script>
+// Maze generator: recursive backtracker on a 20x20 grid.
+const COLS = 20, ROWS = 20, CELL = 20;
+const canvas = document.getElementById('maze');
+const ctx = canvas.getContext('2d');
+
+function generate() {
+  // Each cell: {visited, walls: [top, right, bottom, left]}
+  const grid = Array.from({ length: ROWS }, () =>
+    Array.from({ length: COLS }, () => ({ visited: false, walls: [true, true, true, true] })));
+  const stack = [[0, 0]];
+  grid[0][0].visited = true;
+  const dirs = [[0, -1, 0, 2], [1, 0, 1, 3], [0, 1, 2, 0], [-1, 0, 3, 1]]; // dx, dy, wall, opposite
+  while (stack.length) {
+    const [cx, cy] = stack[stack.length - 1];
+    const options = dirs.filter(([dx, dy]) => {
+      const nx = cx + dx, ny = cy + dy;
+      return nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && !grid[ny][nx].visited;
+    });
+    if (!options.length) { stack.pop(); continue; }
+    const [dx, dy, wall, opp] = options[Math.floor(Math.random() * options.length)];
+    grid[cy][cx].walls[wall] = false;
+    grid[cy + dy][cx + dx].walls[opp] = false;
+    grid[cy + dy][cx + dx].visited = true;
+    stack.push([cx + dx, cy + dy]);
+  }
+  // Draw the maze, opening an entrance and an exit.
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      const [t, r, b, l] = grid[y][x].walls;
+      const px = x * CELL, py = y * CELL;
+      if (t) { ctx.moveTo(px, py); ctx.lineTo(px + CELL, py); }
+      if (r) { ctx.moveTo(px + CELL, py); ctx.lineTo(px + CELL, py + CELL); }
+      if (b) { ctx.moveTo(px, py + CELL); ctx.lineTo(px + CELL, py + CELL); }
+      if (l) { ctx.moveTo(px, py); ctx.lineTo(px, py + CELL); }
+    }
+  }
+  ctx.stroke();
+  // Erase the entrance (top-left) and exit (bottom-right) walls.
+  ctx.clearRect(2, 0, CELL - 4, 3);
+  ctx.clearRect(canvas.width - CELL + 2, canvas.height - 3, CELL - 4, 3);
+  // Mark start (green) and goal (red).
+  ctx.fillStyle = '#2e7d32'; ctx.fillRect(4, 4, CELL - 8, CELL - 8);
+  ctx.fillStyle = '#c62828'; ctx.fillRect(canvas.width - CELL + 4, canvas.height - CELL + 4, CELL - 8, CELL - 8);
+}
+
+document.getElementById('gen').addEventListener('click', generate);
+generate();
+</script>
+</body>
+</html>
