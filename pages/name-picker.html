@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Random Name Picker</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 560px; margin: 40px auto;
+         padding: 0 20px; background: #f6f1e7; color: #333; text-align: center; }
+  h1 { font-size: 1.8rem; }
+  textarea { width: 100%; height: 120px; padding: 10px; font-size: 1rem;
+             border: 2px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+  button { margin-top: 14px; padding: 12px 28px; font-size: 1.1rem; cursor: pointer;
+           background: #e07a5f; color: #fff; border: none; border-radius: 8px; }
+  button:hover { background: #c96a52; }
+  button:disabled { background: #bbb; cursor: default; }
+  #result { margin: 30px 0 10px; font-size: 2.4rem; font-weight: bold; min-height: 3rem;
+            color: #2a9d8f; }
+  #history { color: #777; font-size: 0.95rem; }
+  .small { font-size: 0.85rem; color: #888; }
+</style>
+</head>
+<body>
+  <h1>🎲 Random Name Picker</h1>
+  <p class="small">Paste one name per line, then pick a winner. No repeats until everyone has been picked.</p>
+  <textarea id="names" placeholder="Alice&#10;Bob&#10;Carol&#10;Dave"></textarea><br>
+  <button id="pickBtn">Pick a Name!</button>
+  <button id="resetBtn" style="background:#888">Reset</button>
+  <div id="result"></div>
+  <div id="history"></div>
+
+<script>
+  // Names already picked in this round.
+  let picked = [];
+  const namesEl = document.getElementById('names');
+  const resultEl = document.getElementById('result');
+  const historyEl = document.getElementById('history');
+  const pickBtn = document.getElementById('pickBtn');
+
+  // Parse the textarea into a clean list of names.
+  function getNames() {
+    return namesEl.value.split('\n').map(n => n.trim()).filter(Boolean);
+  }
+
+  function updateHistory() {
+    const remaining = getNames().length - picked.length;
+    historyEl.textContent = picked.length
+      ? `Picked so far: ${picked.join(', ')}  •  ${remaining} left`
+      : '';
+    pickBtn.disabled = remaining <= 0;
+  }
+
+  pickBtn.addEventListener('click', () => {
+    const names = getNames();
+    const pool = names.filter(n => !picked.includes(n));
+    if (!pool.length) { updateHistory(); return; }
+
+    // Spin through random names for a slot-machine feel, then land on the winner.
+    let ticks = 0;
+    const winner = pool[Math.floor(Math.random() * pool.length)];
+    const timer = setInterval(() => {
+      resultEl.textContent = pool[Math.floor(Math.random() * pool.length)];
+      if (++ticks >= 15) {
+        clearInterval(timer);
+        resultEl.textContent = '🎉 ' + winner;
+        picked.push(winner);
+        updateHistory();
+      }
+    }, 70);
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    picked = [];
+    resultEl.textContent = '';
+    updateHistory();
+  });
+
+  namesEl.addEventListener('input', () => { picked = []; resultEl.textContent = ''; updateHistory(); });
+  updateHistory();
+</script>
+</body>
+</html>
