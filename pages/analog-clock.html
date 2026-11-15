@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analog Clock</title>
+<style>
+  /* Simple live analog clock with smooth sweeping hands. */
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center;
+         min-height: 100vh; margin: 0; background: #111; color: #eee; font-family: sans-serif; }
+  body.light { background: #f4f4f4; color: #222; }
+  .clock { width: 280px; height: 280px; border: 10px solid #eee; border-radius: 50%;
+           position: relative; background: #1c1c1c; }
+  body.light .clock { border-color: #222; background: #fff; }
+  .hand { position: absolute; left: 50%; bottom: 50%; transform-origin: 50% 100%;
+          border-radius: 4px; }
+  .hour   { width: 6px; height: 70px; margin-left: -3px; background: #eee; }
+  .minute { width: 4px; height: 105px; margin-left: -2px; background: #ccc; }
+  .second { width: 2px; height: 120px; margin-left: -1px; background: #e74c3c; }
+  body.light .hour, body.light .minute { background: #222; }
+  .center { position: absolute; left: 50%; top: 50%; width: 12px; height: 12px;
+            margin: -6px 0 0 -6px; background: #e74c3c; border-radius: 50%; }
+  .tick { position: absolute; left: 50%; top: 0; width: 2px; height: 10px;
+          margin-left: -1px; background: #888; transform-origin: 50% 140px; }
+  #digital { font-size: 1.6rem; margin-top: 24px; font-variant-numeric: tabular-nums; }
+  button { margin-top: 16px; padding: 8px 16px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="clock" id="clock">
+  <div class="hand hour" id="hour"></div>
+  <div class="hand minute" id="minute"></div>
+  <div class="hand second" id="second"></div>
+  <div class="center"></div>
+</div>
+<div id="digital"></div>
+<button id="toggle">Toggle light / dark</button>
+<script>
+  // Draw the 12 hour ticks around the dial.
+  const clock = document.getElementById('clock');
+  for (let i = 0; i < 12; i++) {
+    const tick = document.createElement('div');
+    tick.className = 'tick';
+    tick.style.transform = `rotate(${i * 30}deg)`;
+    clock.appendChild(tick);
+  }
+
+  // Update the hands and the digital readout every frame.
+  const hour = document.getElementById('hour');
+  const minute = document.getElementById('minute');
+  const second = document.getElementById('second');
+  const digital = document.getElementById('digital');
+
+  function tick() {
+    const now = new Date();
+    const s = now.getSeconds() + now.getMilliseconds() / 1000;
+    const m = now.getMinutes() + s / 60;
+    const h = (now.getHours() % 12) + m / 60;
+    second.style.transform = `rotate(${s * 6}deg)`;
+    minute.style.transform = `rotate(${m * 6}deg)`;
+    hour.style.transform = `rotate(${h * 30}deg)`;
+    digital.textContent = now.toLocaleTimeString();
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  document.getElementById('toggle').addEventListener('click', () => {
+    document.body.classList.toggle('light');
+  });
+</script>
+</body>
+</html>
