@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect Four</title>
+<style>
+  body { font-family: sans-serif; text-align: center; background: #f0f4f8; margin: 0; padding: 20px; }
+  h1 { margin-bottom: 4px; }
+  #status { font-size: 1.2em; margin: 10px 0; min-height: 1.4em; }
+  #board { display: inline-grid; grid-template-columns: repeat(7, 52px); gap: 6px;
+           background: #1e6fd9; padding: 10px; border-radius: 12px; }
+  .cell { width: 52px; height: 52px; border-radius: 50%; background: #fff; cursor: pointer; }
+  .cell.red { background: #e63946; }
+  .cell.yellow { background: #ffd60a; }
+  button { margin-top: 14px; padding: 8px 18px; font-size: 1em; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Connect Four</h1>
+<p>Click a column to drop your disc. First to connect four wins!</p>
+<div id="status">Red's turn</div>
+<div id="board"></div><br>
+<button onclick="resetGame()">New Game</button>
+
+<script>
+  const ROWS = 6, COLS = 7;
+  let board, current, over;
+
+  function resetGame() {
+    board = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    current = 'red';
+    over = false;
+    document.getElementById('status').textContent = "Red's turn";
+    render();
+  }
+
+  function render() {
+    const el = document.getElementById('board');
+    el.innerHTML = '';
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell' + (board[r][c] ? ' ' + board[r][c] : '');
+        cell.onclick = () => drop(c);
+        el.appendChild(cell);
+      }
+    }
+  }
+
+  function drop(col) {
+    if (over) return;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (!board[r][col]) {
+        board[r][col] = current;
+        if (checkWin(r, col)) {
+          document.getElementById('status').textContent =
+            (current === 'red' ? 'Red' : 'Yellow') + ' wins! 🎉';
+          over = true;
+        } else if (board.flat().every(v => v)) {
+          document.getElementById('status').textContent = "It's a draw!";
+          over = true;
+        } else {
+          current = current === 'red' ? 'yellow' : 'red';
+          document.getElementById('status').textContent =
+            (current === 'red' ? 'Red' : 'Yellow') + "'s turn";
+        }
+        render();
+        return;
+      }
+    }
+  }
+
+  function checkWin(r, c) {
+    // Check all four directions from the last move.
+    const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+    return dirs.some(([dr, dc]) => {
+      let count = 1;
+      for (const s of [1, -1]) {
+        let rr = r + dr * s, cc = c + dc * s;
+        while (rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS && board[rr][cc] === current) {
+          count++;
+          rr += dr * s; cc += dc * s;
+        }
+      }
+      return count >= 4;
+    });
+  }
+
+  resetGame();
+</script>
+</body>
+</html>
