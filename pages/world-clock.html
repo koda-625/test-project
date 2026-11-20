@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Clock</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0;
+         margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+         align-items: center; justify-content: center; gap: 8px; }
+  h1 { font-size: 1.6rem; margin: 0 0 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+          gap: 12px; width: min(720px, 92vw); }
+  .card { background: #1e293b; border-radius: 12px; padding: 16px; text-align: center; }
+  .city { font-size: 0.95rem; color: #94a3b8; }
+  .time { font-size: 1.8rem; font-variant-numeric: tabular-nums; margin: 4px 0; }
+  .date { font-size: 0.8rem; color: #64748b; }
+  p.note { color: #64748b; font-size: 0.85rem; }
+</style>
+</head>
+<body>
+<h1>🌍 World Clock</h1>
+<div class="grid" id="clocks"></div>
+<p class="note">Times update every second, straight from your device clock.</p>
+<script>
+  // Cities to display: label + IANA time zone name.
+  const cities = [
+    ["Shanghai", "Asia/Shanghai"],
+    ["Tokyo", "Asia/Tokyo"],
+    ["London", "Europe/London"],
+    ["New York", "America/New_York"],
+    ["Los Angeles", "America/Los_Angeles"],
+    ["Sydney", "Australia/Sydney"],
+  ];
+
+  const grid = document.getElementById("clocks");
+
+  // Build one card per city.
+  for (const [name, tz] of cities) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<div class="city">${name}</div>
+                      <div class="time" data-tz="${tz}"></div>
+                      <div class="date" data-tz="${tz}"></div>`;
+    grid.appendChild(card);
+  }
+
+  function tick() {
+    const now = new Date();
+    document.querySelectorAll(".time").forEach(el => {
+      el.textContent = now.toLocaleTimeString("en-GB", { timeZone: el.dataset.tz });
+    });
+    document.querySelectorAll(".date").forEach(el => {
+      el.textContent = now.toLocaleDateString("en-US", {
+        timeZone: el.dataset.tz, weekday: "short",
+        year: "numeric", month: "short", day: "numeric",
+      });
+    });
+  }
+
+  tick();
+  setInterval(tick, 1000);
+</script>
+</body>
+</html>
