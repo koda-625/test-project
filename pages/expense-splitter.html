@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expense Splitter</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 420px; margin: 40px auto;
+         padding: 0 16px; background: #f6f8fa; color: #24292f; }
+  h1 { text-align: center; }
+  label { display: block; margin: 14px 0 4px; font-weight: 600; }
+  input { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc;
+          border-radius: 8px; box-sizing: border-box; }
+  button { width: 100%; margin-top: 20px; padding: 12px; font-size: 17px;
+           background: #2da44e; color: #fff; border: none; border-radius: 8px;
+           cursor: pointer; }
+  button:hover { background: #2c974b; }
+  #result { margin-top: 24px; padding: 18px; background: #fff; border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.08); text-align: center; display: none; }
+  #result .big { font-size: 36px; font-weight: 700; color: #2da44e; }
+  #result p { margin: 6px 0; color: #57606a; }
+</style>
+</head>
+<body>
+  <h1>💸 Expense Splitter</h1>
+  <p>Split a bill fairly among friends, tip included.</p>
+
+  <label for="total">Total bill ($)</label>
+  <input id="total" type="number" min="0" step="0.01" placeholder="e.g. 120">
+
+  <label for="people">Number of people</label>
+  <input id="people" type="number" min="1" step="1" placeholder="e.g. 4">
+
+  <label for="tip">Tip (%)</label>
+  <input id="tip" type="number" min="0" step="1" value="15">
+
+  <button onclick="split()">Split it!</button>
+
+  <div id="result">
+    <p>Each person pays</p>
+    <div class="big" id="perPerson">$0.00</div>
+    <p id="breakdown"></p>
+  </div>
+
+<script>
+  // Split the bill evenly, including tip.
+  function split() {
+    const total = parseFloat(document.getElementById('total').value);
+    const people = parseInt(document.getElementById('people').value, 10);
+    const tipPct = parseFloat(document.getElementById('tip').value) || 0;
+
+    if (isNaN(total) || total <= 0 || isNaN(people) || people < 1) {
+      alert('Please enter a valid total and number of people.');
+      return;
+    }
+
+    const tip = total * tipPct / 100;
+    const grandTotal = total + tip;
+    const each = grandTotal / people;
+
+    document.getElementById('perPerson').textContent = '$' + each.toFixed(2);
+    document.getElementById('breakdown').textContent =
+      'Bill $' + total.toFixed(2) + ' + tip $' + tip.toFixed(2) +
+      ' = $' + grandTotal.toFixed(2) + ' ÷ ' + people + ' people';
+    document.getElementById('result').style.display = 'block';
+  }
+</script>
+</body>
+</html>
