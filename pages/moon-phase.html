@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moon Phase</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #0b1026; color: #e8eaf6;
+         text-align: center; padding: 2rem 1rem; margin: 0; }
+  h1 { font-size: 1.6rem; margin-bottom: 0.2rem; }
+  .moon { font-size: 6rem; line-height: 1.2; margin: 1rem 0 0.5rem; }
+  .name { font-size: 1.4rem; font-weight: 600; }
+  .detail { color: #9fa8da; margin-top: 0.6rem; line-height: 1.7; }
+  button { margin-top: 1.4rem; padding: 0.6rem 1.2rem; font-size: 1rem;
+           border: none; border-radius: 8px; background: #3949ab; color: #fff;
+           cursor: pointer; }
+  button:hover { background: #5c6bc0; }
+</style>
+</head>
+<body>
+  <h1>&#127765; Moon Phase</h1>
+  <div class="moon" id="emoji">&#127765;</div>
+  <div class="name" id="name">—</div>
+  <div class="detail" id="detail"></div>
+  <button id="again">Check another date</button>
+
+<script>
+// Moon age from a known new moon (2000-01-06 18:14 UTC).
+const SYNODIC = 29.530588853; // days per lunar cycle
+const REFERENCE = Date.UTC(2000, 0, 6, 18, 14);
+
+const PHASES = [
+  [1.84566,  "New Moon",          "&#127761;"],
+  [5.53699,  "Waxing Crescent",   "&#127762;"],
+  [9.22831,  "First Quarter",     "&#127763;"],
+  [12.91963, "Waxing Gibbous",    "&#127764;"],
+  [16.61096, "Full Moon",         "&#127765;"],
+  [20.30228, "Waning Gibbous",    "&#127766;"],
+  [23.99361, "Last Quarter",      "&#127767;"],
+  [27.68493, "Waning Crescent",   "&#127768;"],
+  [29.53059, "New Moon",          "&#127761;"],
+];
+
+function phaseFor(date) {
+  const age = ((date - REFERENCE) / 86400000) % SYNODIC;
+  const moonAge = age < 0 ? age + SYNODIC : age;
+  const [limit, name, emoji] = PHASES.find(([l]) => moonAge < l);
+  // Illumination: 0% at new moon, 100% at full moon.
+  const illum = Math.round((1 - Math.cos(2 * Math.PI * moonAge / SYNODIC)) / 2 * 100);
+  return { moonAge, name, emoji, illum };
+}
+
+function show(date) {
+  const p = phaseFor(date);
+  document.getElementById("emoji").innerHTML = p.emoji;
+  document.getElementById("name").textContent = p.name;
+  document.getElementById("detail").innerHTML =
+    date.toDateString() + "<br>Moon age: " + p.moonAge.toFixed(1) +
+    " days &middot; Illuminated: " + p.illum + "%";
+}
+
+document.getElementById("again").addEventListener("click", () => {
+  const input = prompt("Enter a date (YYYY-MM-DD), or leave empty for today:");
+  const date = input ? new Date(input + "T12:00:00") : new Date();
+  if (isNaN(date)) { alert("That date did not parse — showing today."); show(new Date()); }
+  else show(date);
+});
+
+show(new Date());
+</script>
+</body>
+</html>
