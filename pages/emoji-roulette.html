@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emoji Roulette</title>
+<style>
+  body { font-family: system-ui, sans-serif; text-align: center; background: #1a1a2e; color: #eee; margin: 0; padding: 40px 16px; }
+  h1 { margin-bottom: 4px; }
+  p { color: #aaa; }
+  .slots { display: flex; justify-content: center; gap: 16px; margin: 32px 0; }
+  .slot { width: 96px; height: 96px; font-size: 64px; line-height: 96px; background: #16213e; border: 3px solid #0f3460; border-radius: 16px; }
+  button { font-size: 20px; padding: 12px 32px; border: none; border-radius: 999px; background: #e94560; color: #fff; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  #result { font-size: 22px; min-height: 32px; margin-top: 24px; }
+</style>
+</head>
+<body>
+<h1>🎰 Emoji Roulette</h1>
+<p>Spin the reels and see what fate deals you.</p>
+<div class="slots">
+  <div class="slot" id="s0">🍒</div>
+  <div class="slot" id="s1">🍋</div>
+  <div class="slot" id="s2">⭐</div>
+</div>
+<button id="spin">SPIN</button>
+<div id="result"></div>
+<script>
+  // Emoji pool and verdicts for each outcome.
+  const EMOJIS = ["🍒", "🍋", "⭐", "🔔", "🍀", "💎", "🎃", "🍇"];
+  const slots = [document.getElementById("s0"), document.getElementById("s1"), document.getElementById("s2")];
+  const btn = document.getElementById("spin");
+  const result = document.getElementById("result");
+
+  function pick() { return EMOJIS[Math.floor(Math.random() * EMOJIS.length)]; }
+
+  btn.addEventListener("click", () => {
+    btn.disabled = true;
+    result.textContent = "";
+    const finals = [pick(), pick(), pick()];
+    // Each reel spins for a different length, then lands on its final emoji.
+    slots.forEach((slot, i) => {
+      const ticks = 12 + i * 8;
+      let n = 0;
+      const timer = setInterval(() => {
+        slot.textContent = pick();
+        if (++n >= ticks) {
+          clearInterval(timer);
+          slot.textContent = finals[i];
+          if (i === 2) finish(finals);
+        }
+      }, 70);
+    });
+  });
+
+  function finish(f) {
+    btn.disabled = false;
+    if (f[0] === f[1] && f[1] === f[2]) {
+      result.textContent = "🎉 JACKPOT! Three " + f[0] + " in a row!";
+    } else if (f[0] === f[1] || f[1] === f[2] || f[0] === f[2]) {
+      result.textContent = "Nice — a pair! Spin again for the jackpot.";
+    } else {
+      result.textContent = "No match this time. Try your luck again!";
+    }
+  }
+</script>
+</body>
+</html>
