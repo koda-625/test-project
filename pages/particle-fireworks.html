@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Particle Fireworks</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0b0b1a; overflow: hidden; font-family: sans-serif; }
+  canvas { display: block; }
+  .hint {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    color: #cfcfff; font-size: 15px; text-align: center;
+    text-shadow: 0 0 8px #6666ff; pointer-events: none; user-select: none;
+  }
+  .hint small { display: block; margin-top: 4px; color: #8888bb; font-size: 12px; }
+  button {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    padding: 10px 22px; font-size: 15px; border: none; border-radius: 999px;
+    background: #7c5cff; color: #fff; cursor: pointer;
+    box-shadow: 0 0 18px #7c5cff88;
+  }
+  button:hover { background: #9a7fff; }
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<div class="hint">Click anywhere to launch a firework
+  <small>or press Space for an auto show</small></div>
+<button id="autoBtn">Auto Show</button>
+<script>
+  // Simple canvas fireworks: rockets rise, burst into fading sparks.
+  const canvas = document.getElementById('sky');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+  addEventListener('resize', resize); resize();
+
+  const particles = [];   // sparks after a burst
+  const rockets = [];     // rising rockets
+  let auto = false;
+
+  // Pick a vivid random hue for each firework.
+  function randomHue() { return Math.floor(Math.random() * 360); }
+
+  function launch(x, targetY) {
+    rockets.push({ x, y: H, vy: -(8 + Math.random() * 4),
+                   hue: randomHue(), targetY: targetY ?? H * (0.15 + Math.random() * 0.4) });
+  }
+
+  function burst(x, y, hue) {
+    const count = 70 + Math.floor(Math.random() * 40);
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 1 + Math.random() * 5;
+      particles.push({ x, y,
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+        life: 1, decay: 0.008 + Math.random() * 0.015, hue });
+    }
+  }
+
+  function tick() {
+    // Fade the sky slightly each frame so trails linger.
+    ctx.fillStyle = 'rgba(11, 11, 26, 0.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      const r = rockets[i];
+      r.y += r.vy;
+      ctx.fillStyle = `hsl(${r.hue}, 100%, 70%)`;
+      ctx.beginPath(); ctx.arc(r.x, r.y, 3, 0, Math.PI * 2); ctx.fill();
+      if (r.y <= r.targetY || r.vy >= -1) {
+        burst(r.x, r.y, r.hue);
+        rockets.splice(i, 1);
+      }
+    }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.05;               // gravity pulls sparks down
+      p.vx *= 0.985; p.vy *= 0.985; // air drag
+      p.life -= p.decay;
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+      ctx.fillStyle = `hsla(${p.hue}, 100%, 65%, ${p.life})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI * 2); ctx.fill();
+    }
+
+    if (auto && Math.random() < 0.06) launch(Math.random() * W);
+    requestAnimationFrame(tick);
+  }
+
+  canvas.addEventListener('pointerdown', e => launch(e.clientX));
+  addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); launch(Math.random() * W); } });
+  document.getElementById('autoBtn').addEventListener('click', e => {
+    auto = !auto;
+    e.target.textContent = auto ? 'Stop Auto Show' : 'Auto Show';
+  });
+
+  // Open with a welcome burst.
+  launch(W / 2);
+  tick();
+</script>
+</body>
+</html>
