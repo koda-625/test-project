@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Life Calendar — Your Life in Weeks</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { font-size: 1.6rem; }
+  label { font-weight: 600; }
+  input, button { font-size: 1rem; padding: .4rem .6rem; margin: .3rem 0; }
+  button { cursor: pointer; }
+  #grid { display: grid; grid-template-columns: repeat(52, 1fr); gap: 2px; margin-top: 1rem; }
+  .week { aspect-ratio: 1; background: #e5e5e5; border-radius: 2px; }
+  .week.lived { background: #4f46e5; }
+  .week.current { background: #f59e0b; }
+  #summary { margin-top: 1rem; font-size: 1.05rem; }
+  .legend span { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+</style>
+</head>
+<body>
+<h1>🗓️ Life Calendar</h1>
+<p>Each square is one week of an 80-year life. See how many you've lived — and how many are still ahead.</p>
+
+<label for="dob">Your date of birth:</label>
+<input type="date" id="dob" value="2000-01-01">
+<button id="draw">Draw my life</button>
+
+<div class="legend" style="margin-top:1rem">
+  <span style="background:#4f46e5"></span> lived
+  <span style="background:#f59e0b"></span> this week
+  <span style="background:#e5e5e5"></span> ahead
+</div>
+<div id="grid"></div>
+<p id="summary"></p>
+
+<script>
+  // 80 years x 52 weeks = 4160 little squares.
+  const WEEKS_PER_YEAR = 52, YEARS = 80, TOTAL = WEEKS_PER_YEAR * YEARS;
+  const grid = document.getElementById('grid');
+  const summary = document.getElementById('summary');
+
+  function draw() {
+    const dob = new Date(document.getElementById('dob').value);
+    if (isNaN(dob)) { summary.textContent = 'Please pick a valid birth date.'; return; }
+    const now = new Date();
+    const livedWeeks = Math.floor((now - dob) / (7 * 24 * 60 * 60 * 1000));
+    grid.innerHTML = '';
+    for (let i = 0; i < TOTAL; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'week';
+      if (i < livedWeeks) cell.className += ' lived';
+      else if (i === livedWeeks) cell.className += ' current';
+      cell.title = 'Week ' + (i + 1) + ' of ' + TOTAL;
+      grid.appendChild(cell);
+    }
+    const remaining = Math.max(0, TOTAL - livedWeeks);
+    summary.textContent = 'You have lived ' + livedWeeks.toLocaleString() +
+      ' weeks (' + (livedWeeks / WEEKS_PER_YEAR).toFixed(1) + ' years). ' +
+      remaining.toLocaleString() + ' weeks remain — make them count.';
+  }
+
+  document.getElementById('draw').addEventListener('click', draw);
+  draw(); // draw immediately with the default date
+</script>
+</body>
+</html>
